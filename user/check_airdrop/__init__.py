@@ -1,0 +1,1 @@
+from user.check_airdrop.handlers import check_airdrop_handler

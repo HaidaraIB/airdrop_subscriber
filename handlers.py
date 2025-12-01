@@ -10,12 +10,15 @@ from common.force_join import check_joined_handler
 
 from user.user_calls import *
 from user.user_settings import *
+from user.airdrop_subscription_settings import *
+from user.check_airdrop import *
 
 from admin.admin_calls import *
 from admin.admin_settings import *
 from admin.broadcast import *
 from admin.ban import *
 from admin.force_join_chats_settings import *
+from admin.airdrop_settings import *
 
 from models import init_db
 
@@ -28,6 +31,16 @@ def setup_and_run():
 
     app = MyApp.build_app()
 
+    # CHECK AIRDROP
+    app.add_handler(check_airdrop_handler)
+
+    # AIRDROP SUBSCRIPTION SETTINGS
+    app.add_handler(edit_user_wallet_address_handler)
+    app.add_handler(show_airdrop_subscriptions_handler)
+    app.add_handler(unsubscribe_from_airdrop_handler)
+    app.add_handler(airdrop_subscription_settings_handler)
+
+    # USER SETTINGS
     app.add_handler(user_settings_handler)
     app.add_handler(change_lang_handler)
 
@@ -42,6 +55,13 @@ def setup_and_run():
     app.add_handler(remove_force_join_chat_handler)
     app.add_handler(show_force_join_chats_handler)
     app.add_handler(force_join_chats_settings_handler)
+
+    # AIRDROP SETTINGS
+    app.add_handler(add_airdrop_handler)
+    app.add_handler(edit_airdrop_handler)
+    app.add_handler(remove_airdrop_handler)
+    app.add_handler(show_airdrop_handler)
+    app.add_handler(airdrop_settings_handler)
 
     app.add_handler(broadcast_message_handler)
 

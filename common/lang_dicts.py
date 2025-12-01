@@ -31,6 +31,7 @@ TEXTS = {
         "admin_removed_success": "تمت إزالة الآدمن بنجاح ✅",
         "remove_admin_instruction": "اختر من القائمة أدناه الآدمن الذي تريد إزالته.",
         "continue_with_admin_command": "للمتابعة اضغط /admin",
+        "continue_with_start_command": "للمتابعة اضغط /start",
         "keyboard_hidden": "تم الإخفاء ✅",
         "keyboard_shown": "تم الإظهار ✅",
         "ban_instruction": (
@@ -39,7 +40,7 @@ TEXTS = {
             "أو إلغاء العملية بالضغط على /admin."
         ),
         "user_not_found": (
-            "لم يتم العثور على المستخدم ❌\n"
+            "لم يتم العثور على المستخدم ❗️\n"
             "تأكد من الآيدي أو من أن المستخدم قد بدأ محادثة مع البوت من قبل"
         ),
         "user_found": "تم العثور على المستخدم ✅",
@@ -81,9 +82,61 @@ TEXTS = {
         "no_force_join_chats": "لا توجد محادثات إجبار على الانضمام حالياً ❗️",
         "force_join_chats_list_title": "قائمة محادثات الإجبار على الانضمام:",
         "invalid_chat_id": "آيدي المحادثة غير صحيح ❌",
-        "chat_not_found": "لم يتم العثور على المحادثة ❌\nتأكد من الآيدي أو من أن البوت عضو في المحادثة",
+        "chat_not_found": "لم يتم العثور على المحادثة ❗️\nتأكد من الآيدي أو من أن البوت عضو في المحادثة",
         "chat_link_required": "المحادثة لا تحتوي على رابط دعوة. يرجى إرسال رابط الدعوة يدوياً.",
         "invalid_chat_link": "رابط المحادثة غير صحيح ❌\nيجب أن يبدأ بـ https://t.me/ أو @",
+        "send_contract_address": "أرسل عنوان العقد",
+        "check_airdrop_instruction": "أرسل عنوان العقد أو اسم العملة",
+        "airdrop_not_found": "لم يتم العثور على الآيردروب ❌\nتأكد من عنوان العقد",
+        "airdrop_found": "تم العثور على الآيردروب ✅\n\n",
+        "send_user_wallet_address": "أرسل عنوان المحفظة التي تحتفظ بها بعملة <b>{token_name}</b> أي عنوان لا يحتوي على <b>{token_name}</b> لن يتم احتسابه في الآيردروب أو التوزيع",
+        "subscription_success": "تم الاشتراك في الآيردروب <b>{token_name}</b> بنجاح ✅",
+        "wrong_address": "عنوان غير صحيح ❌\nيجب أن يحتوي العنوان على اسم العملة <b>{token_name}</b>",
+        "airdrop_time_remaining": (
+            "الوقت المتبقي لتوزيع الآيردروب:\n" "<b>{time_remaining}</b>"
+        ),
+        "no_airdrop_subscriptions": "لا يوجد اشتراكات في الآيردروبات ❗️",
+        "choose_airdrop_subscription": "اختر الاشتراك في الآيردروب الذي تريد تعديل عنوان المحفظة عليه",
+        "user_wallet_address_updated": "تم تعديل عنوان المحفظة بنجاح ✅",
+        "unsubscribe_from_airdrop": "اختر الاشتراك في الآيردروب الذي تريد إلغاء الاشتراك منه",
+        "unsubscribed_from_airdrop": "تم إلغاء الاشتراك في الآيردروب بنجاح ✅",
+        "airdrop_settings_title": "إعدادات الآيردروبات 🎁",
+        "add_airdrop_instruction": "أرسل عنوان العقد للآيردروب",
+        "send_token_name": "أرسل اسم العملة",
+        "send_amount": "أرسل المبلغ",
+        "send_distribution_date": (
+            "أرسل تاريخ التوزيع بصيغة:\n"
+            "<code>YYYY-MM-DD HH:MM:SS</code>\n"
+            "<i>مثال:</i>\n"
+            "<code>2024-12-31 23:59:59</code>"
+        ),
+        "send_photo": "أرسل صورة الآيردروب",
+        "airdrop_added_success": "تمت إضافة الآيردروب بنجاح ✅",
+        "airdrop_removed_success": "تمت إزالة الآيردروب بنجاح ✅",
+        "remove_airdrop_instruction": "اختر من القائمة أدناه الآيردروب الذي تريد إزالته",
+        "no_airdrops": "لا توجد آيردروبات حالياً ❗️",
+        "invalid_amount": "المبلغ غير صحيح ❌\n" "يجب أن يكون عدداً موجباً",
+        "invalid_date": (
+            "تاريخ التوزيع غير صحيح ❌\n"
+            "يجب أن يكون بصيغة:\n"
+            "<code>YYYY-MM-DD HH:MM:SS</code>\n"
+            "<i>مثال:</i>\n"
+            "<code>2024-12-31 23:59:59</code>"
+        ),
+        "distribution_date_in_the_past": "تاريخ التوزيع لا يمكن أن يكون في الماضي ❌",
+        "airdrops_list_title": "قائمة الآيردروبات",
+        "edit_airdrop_instruction": "اختر من القائمة أدناه الآيردروب الذي تريد تعديله",
+        "airdrop_updated_success": "تم تحديث الآيردروب بنجاح ✅",
+        "choose_field_to_edit": "اختر الحقل الذي تريد تعديله",
+        "edit_contract_address": "تعديل عنوان العقد",
+        "edit_token_name": "تعديل اسم العملة",
+        "edit_amount": "تعديل المبلغ",
+        "edit_distribution_date": "تعديل تاريخ التوزيع",
+        "edit_photo": "تعديل الصورة",
+        "airdrop_subscription_settings": "إعدادات الاشتراكات في الآيردروبات 🎁",
+        "show_airdrop_instruction": "اختر الآيردروب الذي تريد عرضه",
+        "subscribe_to_airdrop": "الاشتراك في آيردروب <b>{token_name}</b>",
+        "current_wallet_address": "عنوان المحفظة الحالي: <code>{wallet_address}</code>",
     },
     models.Language.ENGLISH: {
         "welcome_msg": "Welcome...",
@@ -115,6 +168,7 @@ TEXTS = {
         "admin_removed_success": "Admin removed successfully ✅",
         "remove_admin_instruction": "Choose from the list below the admin you want to remove.",
         "continue_with_admin_command": "To continue press /admin",
+        "continue_with_start_command": "To continue press /start",
         "keyboard_hidden": "Hidden ✅",
         "keyboard_shown": "Shown ✅",
         "ban_instruction": (
@@ -123,7 +177,7 @@ TEXTS = {
             "Or cancel the operation by pressing /admin."
         ),
         "user_not_found": (
-            "User not found ❌\n"
+            "User not found ❗️\n"
             "Make sure of the ID or that the user has started a conversation with the bot before"
         ),
         "user_found": "User found ✅",
@@ -165,14 +219,67 @@ TEXTS = {
         "no_force_join_chats": "No force join chats currently ❗️",
         "force_join_chats_list_title": "Force Join Chats List:",
         "invalid_chat_id": "Invalid chat ID ❌",
-        "chat_not_found": "Chat not found ❌\nMake sure of the ID or that the bot is a member of the chat",
+        "chat_not_found": "Chat not found ❗️\nMake sure of the ID or that the bot is a member of the chat",
         "chat_link_required": "The chat doesn't have an invite link. Please send the invite link manually.",
         "invalid_chat_link": "Invalid chat link ❌\nMust start with https://t.me/ or @",
+        "send_contract_address": "Send the contract address",
+        "check_airdrop_instruction": "Send the contract address or token name",
+        "airdrop_not_found": "Airdrop not found ❌\nMake sure of the contract address",
+        "airdrop_found": "Airdrop found ✅\n\n",
+        "send_user_wallet_address": "Send your address to receive the airdrop <b>{token_name}</b> any address that does not contain <b>{token_name}</b> will not be counted in the airdrop or distribution",
+        "subscription_success": "Subscription to airdrop <b>{token_name}</b> successful ✅",
+        "wrong_address": "Wrong address ❌\nThe address must contain the token name <b>{token_name}</b>",
+        "airdrop_time_remaining": (
+            "Time remaining to distribute the airdrop:\n" "<b>{time_remaining}</b>"
+        ),
+        "no_airdrop_subscriptions": "No airdrop subscriptions found ❗️",
+        "choose_airdrop_subscription": "Choose the airdrop subscription you want to edit the wallet address of",
+        "user_wallet_address_updated": "User wallet address updated successfully ✅",
+        "unsubscribe_from_airdrop": "Choose the airdrop subscription you want to unsubscribe from",
+        "unsubscribed_from_airdrop": "Unsubscribed from airdrop successfully ✅",
+        "airdrop_settings_title": "Airdrop Settings 🎁",
+        "add_airdrop_instruction": "Send the contract address for the airdrop",
+        "send_token_name": "Send the token name",
+        "send_amount": "Send the amount",
+        "send_distribution_date": (
+            "Send the distribution date in format:\n"
+            "<code>YYYY-MM-DD HH:MM:SS</code>\n"
+            "<i>Example:</i>\n"
+            "<code>2024-12-31 23:59:59</code>"
+        ),
+        "send_photo": "Send the airdrop photo",
+        "airdrop_added_success": "Airdrop added successfully ✅",
+        "airdrop_removed_success": "Airdrop removed successfully ✅",
+        "remove_airdrop_instruction": "Choose from the list below the airdrop you want to remove",
+        "no_airdrops": "No airdrops currently ❗️",
+        "invalid_amount": "Invalid amount ❌\n" "Must be a positive number",
+        "invalid_date": (
+            "Invalid date ❌\n"
+            "Must be in format:\n"
+            "<code>YYYY-MM-DD HH:MM:SS</code>\n"
+            "<i>Example:</i>\n"
+            "<code>2024-12-31 23:59:59</code>"
+        ),
+        "distribution_date_in_the_past": "Distribution date cannot be in the past ❌",
+        "airdrops_list_title": "Airdrops List",
+        "edit_airdrop_instruction": "Choose from the list below the airdrop you want to edit",
+        "airdrop_updated_success": "Airdrop updated successfully ✅",
+        "choose_field_to_edit": "Choose the field you want to edit",
+        "edit_contract_address": "Edit Contract Address",
+        "edit_token_name": "Edit Token Name",
+        "edit_amount": "Edit Amount",
+        "edit_distribution_date": "Edit Distribution Date",
+        "edit_photo": "Edit Photo",
+        "airdrop_subscription_settings": "Airdrop Subscription Settings 🎁",
+        "show_airdrop_instruction": "Choose the airdrop you want to show",
+        "subscribe_to_airdrop": "Subscribe to Airdrop <b>{token_name}</b>",
+        "current_wallet_address": "Current wallet address: <code>{wallet_address}</code>",
     },
 }
 
 BUTTONS = {
     models.Language.ARABIC: {
+        "check_airdrop": "تحقق من وجود آيردروب 🔍",
         "check_joined": "تحقق ✅",
         "bot_channel": "قناة البوت 📢",
         "bot_chat": "محادثة البوت 💬",
@@ -187,7 +294,7 @@ BUTTONS = {
         "add_admin": "إضافة آدمن ➕",
         "remove_admin": "حذف آدمن ✖️",
         "show_admins": "عرض الآدمنز الحاليين 👓",
-        "admin_settings": "إعدادات الآدمن ⚙️🎛",
+        "admin_settings": "إعدادات الآدمن 🎛",
         "ban_unban": "حظر/فك حظر 🔓🔒",
         "hide_ids_keyboard": "إخفاء/إظهار كيبورد معرفة الآيديات🪄",
         "broadcast": "رسالة جماعية 👥",
@@ -207,8 +314,24 @@ BUTTONS = {
         "channel": "قناة 📢",
         "group": "مجموعة 👥",
         "user": "مستخدم 🆔",
+        "edit_user_wallet_address": "تعديل عنوان المحفظة 🖋",
+        "unsubscribe_from_airdrop": "إلغاء الاشتراك في الآيردروب ✖️",
+        "show_airdrop_subscriptions": "عرض الاشتراكات في الآيردروبات 👓",
+        "airdrop_settings": "إعدادات الآيردروبات 🎁",
+        "add_airdrop": "إضافة آيردروب ➕",
+        "edit_airdrop": "تعديل آيردروب 🖋",
+        "remove_airdrop": "حذف آيردروب ✖️",
+        "show_airdrop": "عرض آيردروب 👓",
+        "airdrop_subscription_settings": "إعدادات الاشتراكات في الآيردروبات 🎁",
+        "edit_airdrop_contract_address": "تعديل عنوان العقد",
+        "edit_airdrop_token_name": "تعديل اسم العملة",
+        "edit_airdrop_amount": "تعديل المبلغ",
+        "edit_airdrop_distribution_date": "تعديل تاريخ التوزيع",
+        "edit_airdrop_photo": "تعديل الصورة",
+        "subscribe_to_airdrop": "الاشتراك في الآيردروب ➕",
     },
     models.Language.ENGLISH: {
+        "check_airdrop": "Check Airdrop 🔍",
         "check_joined": "Verify ✅",
         "bot_channel": "Bot's Channel 📢",
         "bot_chat": "Bot's Chat 💬",
@@ -223,7 +346,7 @@ BUTTONS = {
         "add_admin": "Add Admin ➕",
         "remove_admin": "Remove Admin ✖️",
         "show_admins": "Show Current Admins 👓",
-        "admin_settings": "Admin Settings ⚙️🎛",
+        "admin_settings": "Admin Settings 🎛",
         "ban_unban": "Ban/Unban 🔓🔒",
         "hide_ids_keyboard": "Hide/Show ID Keyboard🪄",
         "broadcast": "Broadcast Message 👥",
@@ -243,6 +366,21 @@ BUTTONS = {
         "channel": "Channel 📢",
         "group": "Group 👥",
         "user": "User 🆔",
+        "edit_user_wallet_address": "Edit Wallet Address 🖋",
+        "unsubscribe_from_airdrop": "Unsubscribe from Airdrop ✖️",
+        "show_airdrop_subscriptions": "Show Airdrop Subscriptions 👓",
+        "airdrop_settings": "Airdrop Settings 🎁",
+        "add_airdrop": "Add Airdrop ➕",
+        "edit_airdrop": "Edit Airdrop 🖋",
+        "remove_airdrop": "Remove Airdrop ✖️",
+        "show_airdrop": "Show Airdrop 👓",
+        "airdrop_subscription_settings": "Airdrop Subscription Settings 🎁",
+        "edit_airdrop_contract_address": "Edit Contract Address",
+        "edit_airdrop_token_name": "Edit Token Name",
+        "edit_airdrop_amount": "Edit Amount",
+        "edit_airdrop_distribution_date": "Edit Distribution Date",
+        "edit_airdrop_photo": "Edit Photo",
+        "subscribe_to_airdrop": "Subscribe to Airdrop ➕",
     },
 }
 

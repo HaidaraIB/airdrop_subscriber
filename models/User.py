@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 from models.DB import Base
 from models.Language import Language
 from datetime import datetime
@@ -17,10 +18,16 @@ class User(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    subscriptions = relationship("AirdropSubscription", back_populates="user")
+
+    @property
+    def username_or_name(self):
+        return f'@{self.username}' if self.username else self.name
+
     def __str__(self):
         return (
             f"ID: <code>{self.user_id}</code>\n"
-            f"Username: {f'@{self.username}' if self.username else 'N/A'}\n"
+            f"Username: {self.username_or_name}\n"
             f"Name: <b>{self.name}</b>"
         )
 

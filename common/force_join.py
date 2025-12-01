@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CallbackQueryHandler
 from telegram.constants import ChatMemberStatus
 from common.keyboards import build_user_keyboard
-from common.lang_dicts import *
+from common.lang_dicts import TEXTS, BUTTONS, get_lang
 import models
 
 
@@ -85,7 +85,7 @@ async def check_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lang = get_lang(update.effective_user.id)
         await update.callback_query.edit_message_text(
             text=TEXTS[lang]["welcome_msg"],
-            reply_markup=build_user_keyboard(lang),
+            reply_markup=build_user_keyboard(lang=lang),
         )
         return
 
@@ -120,7 +120,7 @@ async def check_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # User has joined all chats
     await update.callback_query.edit_message_text(
         text=TEXTS[lang]["welcome_msg"],
-        reply_markup=build_user_keyboard(lang),
+        reply_markup=build_user_keyboard(lang=lang),
     )
 
 

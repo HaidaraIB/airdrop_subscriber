@@ -5,7 +5,7 @@ from telegram import (
     KeyboardButtonRequestChat,
     KeyboardButtonRequestUsers,
 )
-from common.lang_dicts import *
+from common.lang_dicts import BUTTONS
 from Config import Config
 import models
 
@@ -14,10 +14,22 @@ def build_user_keyboard(lang: models.Language):
     keyboard = [
         [
             InlineKeyboardButton(
+                text=BUTTONS[lang]["check_airdrop"],
+                callback_data="check_airdrop",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=BUTTONS[lang]["airdrop_subscription_settings"],
+                callback_data="airdrop_subscription_settings",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
                 text=BUTTONS[lang]["settings"],
                 callback_data="user_settings",
             ),
-        ]
+        ],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -40,6 +52,12 @@ def build_admin_keyboard(
 
     keyboard.extend(
         [
+            [
+                InlineKeyboardButton(
+                    text=BUTTONS[lang]["airdrop_settings"],
+                    callback_data="airdrop_settings",
+                )
+            ],
             [
                 InlineKeyboardButton(
                     text=BUTTONS[lang]["force_join_chats_settings"],
@@ -96,13 +114,13 @@ def build_request_buttons(lang: models.Language = models.Language.ARABIC):
     keyboard = [
         [
             KeyboardButton(
-                text=BUTTONS[lang]['user'],
+                text=BUTTONS[lang]["user"],
                 request_users=KeyboardButtonRequestUsers(
                     request_id=0, user_is_bot=False
                 ),
             ),
             KeyboardButton(
-                text=BUTTONS[lang]['channel'],
+                text=BUTTONS[lang]["channel"],
                 request_chat=KeyboardButtonRequestChat(
                     request_id=1, chat_is_channel=True
                 ),
@@ -110,13 +128,13 @@ def build_request_buttons(lang: models.Language = models.Language.ARABIC):
         ],
         [
             KeyboardButton(
-                text=BUTTONS[lang]['group'],
+                text=BUTTONS[lang]["group"],
                 request_chat=KeyboardButtonRequestChat(
                     request_id=2, chat_is_channel=False
                 ),
             ),
             KeyboardButton(
-                text=BUTTONS[lang]['bot'],
+                text=BUTTONS[lang]["bot"],
                 request_users=KeyboardButtonRequestUsers(
                     request_id=3, user_is_bot=True
                 ),

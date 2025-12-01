@@ -1,8 +1,6 @@
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import ContextTypes
-from common.keyboards import build_request_buttons
 import os
-import models
 import uuid
 from datetime import datetime
 
@@ -13,6 +11,7 @@ def check_hidden_keyboard(context: ContextTypes.DEFAULT_TYPE):
         or not context.user_data["request_keyboard_hidden"]
     ):
         context.user_data["request_keyboard_hidden"] = False
+        from common.keyboards import build_request_buttons
         request_buttons = build_request_buttons()
         reply_markup = ReplyKeyboardMarkup(request_buttons, resize_keyboard=True)
     else:
@@ -29,8 +28,8 @@ def create_folders():
 
 
 def format_datetime(d: datetime):
-    return
+    return d.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def format_float(f: float):
-    return float()
+    return f"{f:,.2f}".rstrip("0").rstrip(".")

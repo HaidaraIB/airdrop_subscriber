@@ -21,7 +21,7 @@ from common.keyboards import (
     build_back_to_home_page_button,
 )
 from common.back_to_home_page import back_to_admin_home_page_handler
-from common.lang_dicts import *
+from common.lang_dicts import TEXTS, BUTTONS, get_lang
 from start import admin_command
 import models
 

@@ -14,7 +14,7 @@ from common.keyboards import (
 from admin.broadcast.keyboards import build_broadcast_keyboard
 from admin.broadcast.functions import send_to
 from common.back_to_home_page import back_to_admin_home_page_handler
-from common.lang_dicts import *
+from common.lang_dicts import TEXTS, get_lang
 from start import start_command, admin_command
 import models
 import asyncio

@@ -15,7 +15,7 @@ import models
 from start import start_command
 
 
-CONTRACT_ADDRESS_OR_TOKEN_NAME, USER_WALLET_ADDRESS, SUBSCRIBE_TO_AIRDROP = range(3)
+SEARCH_QUERY, USER_WALLET_ADDRESS, SUBSCRIBE_TO_AIRDROP = range(3)
 
 
 async def check_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -27,32 +27,26 @@ async def check_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 build_back_to_home_page_button(lang=lang, is_admin=False)
             ),
         )
-        return CONTRACT_ADDRESS_OR_TOKEN_NAME
+        return SEARCH_QUERY
 
 
-async def get_contract_address_or_token_name(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
+async def get_search_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
         if update.message:
-            contract_address_or_token_name = update.message.text
-            context.user_data["contract_address_or_token_name"] = (
-                contract_address_or_token_name
-            )
+            search_query = update.message.text
+            context.user_data["search_query"] = search_query
         else:
-            contract_address_or_token_name = context.user_data[
-                "contract_address_or_token_name"
-            ]
+            search_query = context.user_data["search_query"]
 
         with models.session_scope() as s:
             airdrop = (
                 s.query(models.Airdrop)
                 .filter(
                     sa.or_(
-                        models.Airdrop.contract_address
-                        == contract_address_or_token_name,
-                        models.Airdrop.token_name == contract_address_or_token_name,
+                        models.Airdrop.contract_address == search_query,
+                        models.Airdrop.token_name == search_query,
+                        models.Airdrop.token_code == search_query,
                     )
                 )
                 .first()
@@ -68,7 +62,7 @@ async def get_contract_address_or_token_name(
                         callback_data="subscribe_to_airdrop",
                     )
                 ],
-                build_back_button("back_to_get_contract_address", lang=lang),
+                build_back_button("back_to_get_search_query", lang=lang),
                 build_back_to_home_page_button(lang=lang, is_admin=False)[0],
             ]
             await update.message.reply_photo(
@@ -91,7 +85,7 @@ async def get_contract_address_or_token_name(
         return SUBSCRIBE_TO_AIRDROP
 
 
-back_to_get_contract_address = check_airdrop
+back_to_get_search_query = check_airdrop
 
 
 async def subscribe_to_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -113,7 +107,7 @@ async def subscribe_to_airdrop(update: Update, context: ContextTypes.DEFAULT_TYP
         return USER_WALLET_ADDRESS
 
 
-back_to_subscribe_to_airdrop = get_contract_address_or_token_name
+back_to_subscribe_to_airdrop = get_search_query
 
 
 async def get_user_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -123,13 +117,6 @@ async def get_user_wallet_address(update: Update, context: ContextTypes.DEFAULT_
         user_wallet_address = update.message.text.strip()
         with models.session_scope() as s:
             airdrop = s.get(models.Airdrop, airdrop_id)
-            if airdrop.token_name not in user_wallet_address:
-                await update.message.reply_text(
-                    text=TEXTS[lang]["wrong_address"].format(
-                        token_name=airdrop.token_name
-                    )
-                )
-                return
             s.add(
                 models.AirdropSubscription(
                     airdrop_id=airdrop_id,
@@ -162,10 +149,10 @@ check_airdrop_handler = ConversationHandler(
         )
     ],
     states={
-        CONTRACT_ADDRESS_OR_TOKEN_NAME: [
+        SEARCH_QUERY: [
             MessageHandler(
                 filters=(filters.TEXT & ~filters.COMMAND),
-                callback=get_contract_address_or_token_name,
+                callback=get_search_query,
             )
         ],
         SUBSCRIBE_TO_AIRDROP: [
@@ -184,9 +171,7 @@ check_airdrop_handler = ConversationHandler(
     fallbacks=[
         start_command,
         back_to_user_home_page_handler,
-        CallbackQueryHandler(
-            back_to_get_contract_address, "^back_to_get_contract_address$"
-        ),
+        CallbackQueryHandler(back_to_get_search_query, "^back_to_get_search_query$"),
         CallbackQueryHandler(
             back_to_subscribe_to_airdrop, "^back_to_subscribe_to_airdrop$"
         ),

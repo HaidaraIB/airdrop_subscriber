@@ -12,6 +12,7 @@ class Airdrop(Base):
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     contract_address = sa.Column(sa.String)
     token_name = sa.Column(sa.String)
+    token_code = sa.Column(sa.String)
     amount = sa.Column(sa.BigInteger)
     distribution_date = sa.Column(sa.DateTime)
 
@@ -41,6 +42,7 @@ class Airdrop(Base):
     def __str__(self):
         return (
             f"Token Name: <code>{self.token_name}</code>\n"
+            f"Token Code: <code>{self.token_code}</code>\n"
             f"Distribution Amount: <b>{format_float(self.amount)}</b>\n"
             f"Total Subscriptions: <b>{self.total_subscriptions}</b>\n"
             f"Contract Address: <code>{self.contract_address}</code>\n"
@@ -48,4 +50,4 @@ class Airdrop(Base):
         )
 
     def __repr__(self):
-        return f"Airdrop(id={self.id}, contract_address={self.contract_address}, token_name={self.token_name})"
+        return f"Airdrop(id={self.id}, contract_address={self.contract_address}, token_name={self.token_name}, token_code={self.token_code})"

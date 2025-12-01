@@ -1,9 +1,4 @@
-from telegram import (
-    Update,
-    ReplyKeyboardRemove,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-)
+from telegram import Update, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
     ConversationHandler,
@@ -26,8 +21,8 @@ from common.lang_dicts import TEXTS, get_lang
 from custom_filters import PrivateChatAndAdmin
 from start import admin_command
 from datetime import datetime
-import models
 from Config import Config
+import models
 
 
 async def airdrop_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -49,7 +44,7 @@ airdrop_settings_handler = CallbackQueryHandler(
 
 
 # Add Airdrop Conversation States
-CONTRACT_ADDRESS, TOKEN_NAME, AMOUNT, DISTRIBUTION_DATE, PHOTO = range(5)
+CONTRACT_ADDRESS, TOKEN_NAME, TOKEN_CODE, AMOUNT, DISTRIBUTION_DATE, PHOTO = range(6)
 
 
 async def add_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -110,10 +105,35 @@ async def get_token_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text=TEXTS[lang]["send_amount"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
-        return AMOUNT
+        return TOKEN_CODE
 
 
 back_to_get_token_name = get_contract_address
+
+
+async def get_token_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if PrivateChatAndAdmin().filter(update):
+        lang = get_lang(update.effective_user.id)
+        back_buttons = [
+            build_back_button("back_to_get_token_code", lang=lang),
+            build_back_to_home_page_button(lang=lang, is_admin=True)[0],
+        ]
+        if update.message:
+            token_code = update.message.text.strip()
+            context.user_data["token_code"] = token_code
+            await update.message.reply_text(
+                text=TEXTS[lang]["send_token_code"],
+                reply_markup=InlineKeyboardMarkup(back_buttons),
+            )
+        else:
+            await update.callback_query.edit_message_text(
+                text=TEXTS[lang]["send_token_code"],
+                reply_markup=InlineKeyboardMarkup(back_buttons),
+            )
+        return AMOUNT
+
+
+back_to_get_token_code = get_token_name
 
 
 async def get_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -138,7 +158,7 @@ async def get_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return DISTRIBUTION_DATE
 
 
-back_to_get_amount = get_token_name
+back_to_get_amount = get_token_code
 
 
 async def get_distribution_date(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -222,6 +242,12 @@ add_airdrop_handler = ConversationHandler(
                 callback=get_token_name,
             ),
         ],
+        TOKEN_CODE: [
+            MessageHandler(
+                filters=filters.TEXT & ~filters.COMMAND,
+                callback=get_token_code,
+            ),
+        ],
         AMOUNT: [
             MessageHandler(
                 filters=filters.TEXT & filters.Regex("^[0-9]+$"),
@@ -252,6 +278,7 @@ add_airdrop_handler = ConversationHandler(
             back_to_get_contract_address, "^back_to_get_contract_address$"
         ),
         CallbackQueryHandler(back_to_get_token_name, "^back_to_get_token_name$"),
+        CallbackQueryHandler(back_to_get_token_code, "^back_to_get_token_code$"),
         CallbackQueryHandler(back_to_get_amount, "^back_to_get_amount$"),
         CallbackQueryHandler(
             back_to_get_distribution_date, "^back_to_get_distribution_date$"
@@ -498,6 +525,8 @@ async def choose_field_to_edit(update: Update, context: ContextTypes.DEFAULT_TYP
             text = TEXTS[lang]["send_contract_address"]
         elif field == "edit_airdrop_token_name":
             text = TEXTS[lang]["send_token_name"]
+        elif field == "edit_airdrop_token_code":
+            text = TEXTS[lang]["send_token_code"]
         elif field == "edit_airdrop_amount":
             text = TEXTS[lang]["send_amount"]
         elif field == "edit_airdrop_distribution_date":
@@ -533,6 +562,8 @@ async def get_new_value(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 airdrop.contract_address = update.message.text.strip()
             elif field == "edit_airdrop_token_name":
                 airdrop.token_name = update.message.text.strip()
+            elif field == "edit_airdrop_token_code":
+                airdrop.token_code = update.message.text.strip()
             elif field == "edit_airdrop_amount":
                 try:
                     airdrop.amount = int(update.message.text.strip())
@@ -582,7 +613,7 @@ edit_airdrop_handler = ConversationHandler(
         CHOOSE_FIELD_TO_EDIT: [
             CallbackQueryHandler(
                 choose_field_to_edit,
-                "^edit_airdrop_(contract_address|token_name|amount|distribution_date|photo)$",
+                "^edit_airdrop_(contract_address|token_name|token_code|amount|distribution_date|photo)$",
             ),
         ],
         NEW_VALUE: [

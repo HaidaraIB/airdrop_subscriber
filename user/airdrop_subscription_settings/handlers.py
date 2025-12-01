@@ -133,11 +133,6 @@ async def choose_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 back_to_choose_airdrop = airdrop_subscription_settings
 
 
-async def back_to_option_screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Go back to the option screen after choosing an airdrop"""
-    return await choose_airdrop(update, context)
-
-
 async def add_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
@@ -169,14 +164,6 @@ async def get_new_wallet_address(update: Update, context: ContextTypes.DEFAULT_T
 
         with models.session_scope() as s:
             airdrop = s.get(models.Airdrop, airdrop_id)
-            if airdrop.token_name not in new_wallet_address:
-                await update.message.reply_text(
-                    text=TEXTS[lang]["wrong_address"].format(
-                        token_name=airdrop.token_name
-                    )
-                )
-                return
-
             # Create new subscription with this wallet address
             s.add(
                 models.AirdropSubscription(
@@ -425,10 +412,6 @@ airdrop_subscription_settings_handler = ConversationHandler(
             CallbackQueryHandler(
                 confirm_unsubscribe_airdrop,
                 r"^confirm_unsubscribe$",
-            ),
-            CallbackQueryHandler(
-                back_to_option_screen,
-                r"^back_to_option_screen$",
             ),
         ],
     },

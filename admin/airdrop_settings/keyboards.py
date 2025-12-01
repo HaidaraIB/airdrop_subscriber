@@ -44,6 +44,10 @@ def build_edit_airdrop_fields_keyboard(lang: models.Language = models.Language.A
                 text=BUTTONS[lang]["edit_airdrop_token_name"],
                 callback_data="edit_airdrop_token_name",
             ),
+            InlineKeyboardButton(
+                text=BUTTONS[lang]["edit_airdrop_token_code"],
+                callback_data="edit_airdrop_token_code",
+            ),
         ],
         [
             InlineKeyboardButton(

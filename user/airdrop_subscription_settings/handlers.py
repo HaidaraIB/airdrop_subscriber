@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     ContextTypes,
     CallbackQueryHandler,
@@ -6,20 +6,31 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+import sqlalchemy as sa
 from common.keyboards import (
     build_back_to_home_page_button,
     build_back_button,
     build_keyboard,
     build_user_keyboard,
 )
-from common.lang_dicts import TEXTS, get_lang
+from common.lang_dicts import TEXTS, BUTTONS, get_lang
 from custom_filters import PrivateChat
+from common.back_to_home_page import back_to_user_home_page_handler
 from user.airdrop_subscription_settings.keyboards import (
     build_airdrop_subscription_settings_keyboard,
 )
-from common.back_to_home_page import back_to_admin_home_page_handler
 from start import start_command
 import models
+
+
+# State constants
+(
+    AIRDROP,
+    OPTION,
+    NEW_WALLET_ADDRESS,
+    WALLET_ADDRESS_TO_REMOVE,
+    UNSUBSCRIBE_CONFIRMATION,
+) = range(5)
 
 
 async def airdrop_subscription_settings(
@@ -27,350 +38,414 @@ async def airdrop_subscription_settings(
 ):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
-        keyboard = build_airdrop_subscription_settings_keyboard(lang=lang)
-        keyboard.append(build_back_to_home_page_button(lang=lang, is_admin=False)[0])
-        await update.callback_query.edit_message_text(
-            text=TEXTS[lang]["airdrop_subscription_settings"],
-            reply_markup=InlineKeyboardMarkup(keyboard),
-        )
-        return ConversationHandler.END
-
-
-airdrop_subscription_settings_handler = CallbackQueryHandler(
-    airdrop_subscription_settings,
-    "^airdrop_subscription_settings$|^back_to_airdrop_subscription_settings$",
-)
-
-
-AIRDROP_SUBSCRIPTION, NEW_USER_WALLET_ADDRESS = range(2)
-
-
-async def edit_user_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if PrivateChat().filter(update):
-        lang = get_lang(update.effective_user.id)
         with models.session_scope() as s:
-            airdrop_subscriptions = (
-                s.query(models.AirdropSubscription)
-                .filter_by(user_id=update.effective_user.id)
-                .all()
-            )
-            if not airdrop_subscriptions:
+            # Get all subscriptions and group by airdrop_id to get unique airdrops
+            stmt = sa.select(
+                sa.distinct(models.AirdropSubscription.airdrop_id)
+            ).filter_by(user_id=update.effective_user.id)
+
+            subscription_airdrop_ids = s.execute(stmt).scalars().all()
+
+            if not subscription_airdrop_ids:
                 await update.callback_query.answer(
                     text=TEXTS[lang]["no_airdrop_subscriptions"],
                     show_alert=True,
                 )
                 return ConversationHandler.END
+
+            airdrops: list[models.Airdrop] = []
+            for i in subscription_airdrop_ids:
+                airdrop = s.get(models.Airdrop, i)
+                airdrops.append(airdrop)
+
+            # Build keyboard with unique airdrops
             keyboard = build_keyboard(
                 columns=1,
-                texts=[
-                    airdrop_subscription.airdrop.token_name
-                    for airdrop_subscription in airdrop_subscriptions
-                ],
-                buttons_data=[
-                    str(airdrop_subscription.id)
-                    for airdrop_subscription in airdrop_subscriptions
-                ],
+                texts=[airdrop.token_name for airdrop in airdrops],
+                buttons_data=[str(i) for i in subscription_airdrop_ids],
             )
-            keyboard.append(
-                build_back_button(
-                    data="back_to_airdrop_subscription_settings", lang=lang
-                )
-            )
+
             keyboard.append(
                 build_back_to_home_page_button(lang=lang, is_admin=False)[0]
             )
             await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["choose_airdrop_subscription"],
+                text=TEXTS[lang]["choose_airdrop_to_manage"],
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
-        return AIRDROP_SUBSCRIPTION
+        return AIRDROP
 
 
-async def choose_airdrop_subscription(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
+async def choose_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
+
+        # Get airdrop_id from callback or context
         if not update.callback_query.data.startswith("back"):
-            airdrop_subscription_id = int(update.callback_query.data)
-            context.user_data["airdrop_subscription_id"] = airdrop_subscription_id
+            airdrop_id = int(update.callback_query.data)
+            context.user_data["airdrop_id"] = airdrop_id
         else:
-            airdrop_subscription_id = context.user_data["airdrop_subscription_id"]
+            airdrop_id = context.user_data["airdrop_id"]
+
+        await update.callback_query.delete_message()
+
         with models.session_scope() as s:
-            airdrop_subscription = s.get(
-                models.AirdropSubscription, airdrop_subscription_id
+            airdrop = s.get(models.Airdrop, airdrop_id)
+            # Get all subscriptions for this airdrop and user
+            subscriptions = (
+                s.query(models.AirdropSubscription)
+                .filter_by(user_id=update.effective_user.id, airdrop_id=airdrop_id)
+                .all()
             )
-            back_buttons = [
-                build_back_button(
-                    data="back_to_choose_airdrop_subscription", lang=lang
+
+            # Build wallet addresses list
+            wallet_addresses = "Wallet Addresses:\n" + "\n".join(
+                [f"• <code>{sub.wallet_address}</code>" for sub in subscriptions]
+            )
+            await context.bot.send_photo(
+                chat_id=update.effective_chat.id,
+                photo=airdrop.photo,
+                caption=(
+                    str(airdrop)
+                    + "\n\n"
+                    + TEXTS[lang]["airdrop_time_remaining"].format(
+                        time_remaining=airdrop.calculate_time_remaining(lang)
+                    )
+                    + "\n\n"
+                    + TEXTS[lang]["wallet_addresses_list"].format(
+                        wallet_addresses=wallet_addresses
+                    )
                 ),
+            )
+            # Build keyboard
+            keyboard = build_airdrop_subscription_settings_keyboard(lang=lang)
+            keyboard.append(build_back_button(data="back_to_choose_airdrop", lang=lang))
+            keyboard.append(
+                build_back_to_home_page_button(lang=lang, is_admin=False)[0]
+            )
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=TEXTS[lang]["choose_option"],
+                reply_markup=InlineKeyboardMarkup(keyboard),
+            )
+        return OPTION
+
+
+back_to_choose_airdrop = airdrop_subscription_settings
+
+
+async def back_to_option_screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Go back to the option screen after choosing an airdrop"""
+    return await choose_airdrop(update, context)
+
+
+async def add_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if PrivateChat().filter(update):
+        lang = get_lang(update.effective_user.id)
+        airdrop_id = context.user_data["airdrop_id"]
+
+        with models.session_scope() as s:
+            airdrop = s.get(models.Airdrop, airdrop_id)
+            back_buttons = [
+                build_back_button(data="back_to_add_wallet_address", lang=lang),
                 build_back_to_home_page_button(lang=lang, is_admin=False)[0],
             ]
             await update.callback_query.edit_message_text(
-                text=(
-                    TEXTS[lang]["send_user_wallet_address"].format(
-                        token_name=airdrop_subscription.airdrop.token_name,
-                    )
-                    + "\n\n"
-                    + TEXTS[lang]["current_wallet_address"].format(
-                        wallet_address=airdrop_subscription.wallet_address
-                    )
+                text=TEXTS[lang]["send_user_wallet_address"].format(
+                    token_name=airdrop.token_name
                 ),
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
-        return NEW_USER_WALLET_ADDRESS
+        return NEW_WALLET_ADDRESS
 
 
-back_to_choose_airdrop_subscription = edit_user_wallet_address
+back_to_add_wallet_address = choose_airdrop
 
 
-async def new_user_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def get_new_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
-        airdrop_subscription_id = context.user_data["airdrop_subscription_id"]
-        new_user_wallet_address = update.message.text
+        airdrop_id = context.user_data["airdrop_id"]
+        new_wallet_address = update.message.text.strip()
+
         with models.session_scope() as s:
-            airdrop_subscription = s.get(
-                models.AirdropSubscription, airdrop_subscription_id
-            )
-            if airdrop_subscription.airdrop.token_name not in new_user_wallet_address:
+            airdrop = s.get(models.Airdrop, airdrop_id)
+            if airdrop.token_name not in new_wallet_address:
                 await update.message.reply_text(
                     text=TEXTS[lang]["wrong_address"].format(
-                        token_name=airdrop_subscription.airdrop.token_name
+                        token_name=airdrop.token_name
                     )
                 )
                 return
-            airdrop_subscription.wallet_address = new_user_wallet_address
+
+            # Create new subscription with this wallet address
+            s.add(
+                models.AirdropSubscription(
+                    airdrop_id=airdrop_id,
+                    user_id=update.effective_user.id,
+                    wallet_address=new_wallet_address,
+                )
+            )
             s.commit()
+
         await update.message.reply_text(
-            text=TEXTS[lang]["user_wallet_address_updated"],
-            reply_markup=build_user_keyboard(
-                lang=lang
-            ),
+            text=TEXTS[lang]["wallet_address_added_success"],
+            reply_markup=build_user_keyboard(lang=lang),
         )
         return ConversationHandler.END
 
 
-edit_user_wallet_address_handler = ConversationHandler(
-    entry_points=[
-        CallbackQueryHandler(
-            edit_user_wallet_address,
-            "^edit_user_wallet_address$",
-        )
-    ],
-    states={
-        AIRDROP_SUBSCRIPTION: [
-            CallbackQueryHandler(
-                choose_airdrop_subscription,
-                r"^[0-9]+$",
-            )
-        ],
-        NEW_USER_WALLET_ADDRESS: [
-            MessageHandler(
-                filters=(filters.TEXT & ~filters.COMMAND),
-                callback=new_user_wallet_address,
-            )
-        ],
-    },
-    fallbacks=[
-        start_command,
-        back_to_admin_home_page_handler,
-        airdrop_subscription_settings_handler,
-        CallbackQueryHandler(
-            back_to_choose_airdrop_subscription,
-            "^back_to_choose_airdrop_subscription$",
-        ),
-    ],
-    name="edit_user_wallet_address_handler",
-    persistent=True,
-)
-
-
-AIRDROP_SUBSCRIPTION_TO_UNSUBSCRIBE = range(1)
-
-
-async def unsubscribe_from_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def remove_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
+        airdrop_id = context.user_data["airdrop_id"]
+
         with models.session_scope() as s:
-            airdrop_subscriptions = (
+            subscriptions = (
                 s.query(models.AirdropSubscription)
-                .filter_by(user_id=update.effective_user.id)
+                .filter_by(user_id=update.effective_user.id, airdrop_id=airdrop_id)
                 .all()
             )
-            if not airdrop_subscriptions:
-                await update.callback_query.answer(
-                    text=TEXTS[lang]["no_airdrop_subscriptions"],
-                    show_alert=True,
-                )
-                return ConversationHandler.END
             keyboard = build_keyboard(
                 columns=1,
-                texts=[
-                    airdrop_subscription.airdrop.token_name
-                    for airdrop_subscription in airdrop_subscriptions
-                ],
-                buttons_data=[
-                    str(airdrop_subscription.id)
-                    for airdrop_subscription in airdrop_subscriptions
-                ],
+                texts=[sub.wallet_address for sub in subscriptions],
+                buttons_data=[str(sub.id) for sub in subscriptions],
             )
+
             keyboard.append(
-                build_back_button(
-                    data="back_to_airdrop_subscription_settings", lang=lang
-                )
+                build_back_button(data="back_to_remove_wallet_address", lang=lang)
             )
             keyboard.append(
                 build_back_to_home_page_button(lang=lang, is_admin=False)[0]
             )
+
             await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["unsubscribe_from_airdrop"],
+                text=TEXTS[lang]["select_wallet_address_to_remove"],
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
-        return AIRDROP_SUBSCRIPTION_TO_UNSUBSCRIBE
+        return WALLET_ADDRESS_TO_REMOVE
 
 
-async def choose_airdrop_subscription_to_unsubscribe(
+back_to_remove_wallet_address = choose_airdrop
+
+
+async def choose_wallet_address_to_remove(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ):
     if PrivateChat().filter(update):
         lang = get_lang(update.effective_user.id)
-        airdrop_subscription_id = int(update.callback_query.data)
+        subscription_id = int(update.callback_query.data)
+
         with models.session_scope() as s:
-            airdrop_subscription = s.get(
-                models.AirdropSubscription, airdrop_subscription_id
+            subscription = s.get(models.AirdropSubscription, subscription_id)
+
+            # Check if this is the last wallet address
+            remaining_subscriptions = (
+                s.query(models.AirdropSubscription)
+                .filter_by(
+                    user_id=update.effective_user.id, airdrop_id=subscription.airdrop_id
+                )
+                .all()
             )
-            s.delete(airdrop_subscription)
+
+            if len(remaining_subscriptions) == 1:
+                # Last wallet address, unsubscribe completely
+                for sub in remaining_subscriptions:
+                    s.delete(sub)
+                s.commit()
+                await update.callback_query.answer(
+                    text=TEXTS[lang]["unsubscribed_from_airdrop"],
+                    show_alert=True,
+                )
+                await update.callback_query.edit_message_text(
+                    text=TEXTS[lang]["home_page"],
+                    reply_markup=build_user_keyboard(lang=lang),
+                )
+                return ConversationHandler.END
+            else:
+                # Remove this subscription
+                s.delete(subscription)
+                s.commit()
+
+                await update.callback_query.answer(
+                    text=TEXTS[lang]["wallet_address_removed_success"],
+                    show_alert=True,
+                )
+
+                # Get remaining subscriptions to build updated list
+                remaining_subscriptions = (
+                    s.query(models.AirdropSubscription)
+                    .filter_by(
+                        user_id=update.effective_user.id,
+                        airdrop_id=subscription.airdrop_id,
+                    )
+                    .all()
+                )
+
+                # Build wallet addresses list
+                wallet_addresses = "Wallet Addresses:\n" + "\n".join(
+                    [
+                        f"• <code>{sub.wallet_address}</code>"
+                        for sub in remaining_subscriptions
+                    ]
+                )
+                await context.bot.send_photo(
+                    chat_id=update.effective_chat.id,
+                    photo=subscription.airdrop.photo,
+                    caption=(
+                        str(subscription.airdrop)
+                        + "\n\n"
+                        + TEXTS[lang]["airdrop_time_remaining"].format(
+                            time_remaining=subscription.airdrop.calculate_time_remaining(
+                                lang
+                            )
+                        )
+                        + "\n\n"
+                        + TEXTS[lang]["wallet_addresses_list"].format(
+                            wallet_addresses=wallet_addresses
+                        )
+                    ),
+                )
+                # Build keyboard
+                keyboard = build_airdrop_subscription_settings_keyboard(lang=lang)
+                keyboard.append(
+                    build_back_button(data="back_to_choose_airdrop", lang=lang)
+                )
+                keyboard.append(
+                    build_back_to_home_page_button(lang=lang, is_admin=False)[0]
+                )
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=TEXTS[lang]["choose_option"],
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                )
+        return OPTION
+
+
+async def unsubscribe_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show confirmation before unsubscribing"""
+    if PrivateChat().filter(update):
+        lang = get_lang(update.effective_user.id)
+        airdrop_id = context.user_data["airdrop_id"]
+        with models.session_scope() as s:
+            airdrop = s.get(models.Airdrop, airdrop_id)
+            keyboard = [
+                [
+                    InlineKeyboardButton(
+                        text=BUTTONS[lang]["confirm_button"],
+                        callback_data="confirm_unsubscribe",
+                    )
+                ],
+                build_back_button(data="back_to_unsubscribe_airdrop", lang=lang),
+                build_back_to_home_page_button(lang=lang, is_admin=False)[0],
+            ]
+
+            await update.callback_query.edit_message_text(
+                text=TEXTS[lang]["unsubscribe_confirmation"].format(
+                    token_name=airdrop.token_name
+                ),
+                reply_markup=InlineKeyboardMarkup(keyboard),
+            )
+        return UNSUBSCRIBE_CONFIRMATION
+
+
+back_to_unsubscribe_airdrop = choose_airdrop
+
+
+async def confirm_unsubscribe_airdrop(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    """Actually unsubscribe from airdrop after confirmation"""
+    if PrivateChat().filter(update):
+        lang = get_lang(update.effective_user.id)
+        airdrop_id = context.user_data["airdrop_id"]
+        with models.session_scope() as s:
+            subscriptions = (
+                s.query(models.AirdropSubscription)
+                .filter_by(user_id=update.effective_user.id, airdrop_id=airdrop_id)
+                .all()
+            )
+
+            for subscription in subscriptions:
+                s.delete(subscription)
             s.commit()
+
         await update.callback_query.answer(
             text=TEXTS[lang]["unsubscribed_from_airdrop"],
             show_alert=True,
         )
         await update.callback_query.edit_message_text(
             text=TEXTS[lang]["home_page"],
-            reply_markup=build_user_keyboard(
-                lang=lang
+            reply_markup=build_user_keyboard(lang=lang),
+        )
+        return ConversationHandler.END
+
+
+# Handler registrations
+airdrop_subscription_settings_handler = ConversationHandler(
+    entry_points=[
+        CallbackQueryHandler(
+            airdrop_subscription_settings,
+            r"^airdrop_subscription_settings$",
+        )
+    ],
+    states={
+        AIRDROP: [
+            CallbackQueryHandler(
+                choose_airdrop,
+                r"^[0-9]+$",
             ),
-        )
-        return ConversationHandler.END
-
-
-unsubscribe_from_airdrop_handler = ConversationHandler(
-    entry_points=[
-        CallbackQueryHandler(
-            unsubscribe_from_airdrop,
-            "^unsubscribe_from_airdrop$",
-        )
-    ],
-    states={
-        AIRDROP_SUBSCRIPTION_TO_UNSUBSCRIBE: [
+        ],
+        OPTION: [
             CallbackQueryHandler(
-                choose_airdrop_subscription_to_unsubscribe,
+                add_wallet_address,
+                r"^add_wallet_address$",
+            ),
+            CallbackQueryHandler(
+                remove_wallet_address,
+                r"^remove_wallet_address$",
+            ),
+            CallbackQueryHandler(
+                unsubscribe_airdrop,
+                r"^unsubscribe_from_airdrop$",
+            ),
+        ],
+        NEW_WALLET_ADDRESS: [
+            MessageHandler(
+                filters=(filters.TEXT & ~filters.COMMAND),
+                callback=get_new_wallet_address,
+            ),
+        ],
+        WALLET_ADDRESS_TO_REMOVE: [
+            CallbackQueryHandler(
+                choose_wallet_address_to_remove,
                 r"^[0-9]+$",
-            )
+            ),
+        ],
+        UNSUBSCRIBE_CONFIRMATION: [
+            CallbackQueryHandler(
+                confirm_unsubscribe_airdrop,
+                r"^confirm_unsubscribe$",
+            ),
+            CallbackQueryHandler(
+                back_to_option_screen,
+                r"^back_to_option_screen$",
+            ),
         ],
     },
     fallbacks=[
         start_command,
-        back_to_admin_home_page_handler,
-        airdrop_subscription_settings_handler,
-    ],
-    name="unsubscribe_from_airdrop_handler",
-    persistent=True,
-)
-
-
-AIRDROP_SUBSCRIPTION_TO_SHOW = range(1)
-
-
-async def show_airdrop_subscriptions(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
-    if PrivateChat().filter(update):
-        lang = get_lang(update.effective_user.id)
-        with models.session_scope() as s:
-            airdrop_subscriptions = (
-                s.query(models.AirdropSubscription)
-                .filter_by(user_id=update.effective_user.id)
-                .all()
-            )
-            if not airdrop_subscriptions:
-                await update.callback_query.answer(
-                    text=TEXTS[lang]["no_airdrop_subscriptions"],
-                    show_alert=True,
-                )
-                return ConversationHandler.END
-            keyboard = build_keyboard(
-                columns=1,
-                texts=[
-                    airdrop_subscription.airdrop.token_name
-                    for airdrop_subscription in airdrop_subscriptions
-                ],
-            )
-            keyboard.append(
-                build_back_button(
-                    data="back_to_airdrop_subscription_settings", lang=lang
-                )
-            )
-            keyboard.append(
-                build_back_to_home_page_button(lang=lang, is_admin=False)[0]
-            )
-            await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["show_airdrop_subscriptions"],
-                reply_markup=InlineKeyboardMarkup(keyboard),
-            )
-        return AIRDROP_SUBSCRIPTION_TO_SHOW
-
-
-async def choose_airdrop_subscription_to_show(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
-    if PrivateChat().filter(update):
-        lang = get_lang(update.effective_user.id)
-        airdrop_subscription_id = int(update.callback_query.data)
-        with models.session_scope() as s:
-            airdrop_subscription = s.get(
-                models.AirdropSubscription, airdrop_subscription_id
-            )
-            await update.callback_query.delete_message()
-            await context.bot.send_photo(
-                chat_id=update.effective_chat.id,
-                photo=airdrop_subscription.airdrop.photo,
-                caption=(
-                    str(airdrop_subscription)
-                    + "\n"
-                    + TEXTS[lang]["airdrop_time_remaining"].format(
-                        time_remaining=airdrop_subscription.airdrop.calculate_time_remaining(
-                            lang
-                        )
-                    )
-                    + "\n\n"
-                    + TEXTS[lang]["continue_with_start_command"]
-                ),
-            )
-        return ConversationHandler.END
-
-
-show_airdrop_subscriptions_handler = ConversationHandler(
-    entry_points=[
+        back_to_user_home_page_handler,
+        CallbackQueryHandler(back_to_choose_airdrop, r"^back_to_choose_airdrop$"),
         CallbackQueryHandler(
-            show_airdrop_subscriptions,
-            "^show_airdrop_subscriptions$",
-        )
+            back_to_add_wallet_address, r"^back_to_add_wallet_address$"
+        ),
+        CallbackQueryHandler(
+            back_to_remove_wallet_address, r"^back_to_remove_wallet_address$"
+        ),
+        CallbackQueryHandler(
+            back_to_unsubscribe_airdrop, r"^back_to_unsubscribe_airdrop$"
+        ),
     ],
-    states={
-        AIRDROP_SUBSCRIPTION_TO_SHOW: [
-            CallbackQueryHandler(
-                choose_airdrop_subscription_to_show,
-                r"^[0-9]+$",
-            )
-        ],
-    },
-    fallbacks=[
-        start_command,
-        back_to_admin_home_page_handler,
-        airdrop_subscription_settings_handler,
-    ],
-    name="show_airdrop_subscriptions_handler",
+    name="airdrop_subscription_settings_handler",
     persistent=True,
 )

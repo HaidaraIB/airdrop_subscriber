@@ -100,6 +100,18 @@ TEXTS = {
         "user_wallet_address_updated": "تم تعديل عنوان المحفظة بنجاح ✅",
         "unsubscribe_from_airdrop": "اختر الاشتراك في الآيردروب الذي تريد إلغاء الاشتراك منه",
         "unsubscribed_from_airdrop": "تم إلغاء الاشتراك في الآيردروب بنجاح ✅",
+        "unsubscribe_confirmation": (
+            "هل أنت متأكد من إلغاء الاشتراك في آيردروب <b>{token_name}</b>؟\n"
+            "سيتم حذف جميع عناوين المحافظ المرتبطة بهذا الآيردروب."
+        ),
+        "airdrop_subscription_settings": "إعدادات الاشتراكات في الآيردروبات 🎁",
+        "choose_airdrop_to_manage": "اختر الآيردروب الذي تريد إدارة اشتراكاته",
+        "wallet_addresses_list": "عناوين المحافظ:\n{wallet_addresses}",
+        "add_wallet_address": "إضافة عنوان محفظة ➕",
+        "remove_wallet_address": "حذف عنوان محفظة ✖️",
+        "wallet_address_added_success": "تمت إضافة عنوان المحفظة بنجاح ✅",
+        "wallet_address_removed_success": "تم حذف عنوان المحفظة بنجاح ✅",
+        "select_wallet_address_to_remove": "اختر عنوان المحفظة الذي تريد حذفه",
         "airdrop_settings_title": "إعدادات الآيردروبات 🎁",
         "add_airdrop_instruction": "أرسل عنوان العقد للآيردروب",
         "send_token_name": "أرسل اسم العملة",
@@ -137,6 +149,7 @@ TEXTS = {
         "show_airdrop_instruction": "اختر الآيردروب الذي تريد عرضه",
         "subscribe_to_airdrop": "الاشتراك في آيردروب <b>{token_name}</b>",
         "current_wallet_address": "عنوان المحفظة الحالي: <code>{wallet_address}</code>",
+        "choose_option": "اختر أحد الخيارات التالية",
     },
     models.Language.ENGLISH: {
         "welcome_msg": "Welcome...",
@@ -237,6 +250,18 @@ TEXTS = {
         "user_wallet_address_updated": "User wallet address updated successfully ✅",
         "unsubscribe_from_airdrop": "Choose the airdrop subscription you want to unsubscribe from",
         "unsubscribed_from_airdrop": "Unsubscribed from airdrop successfully ✅",
+        "unsubscribe_confirmation": (
+            "Are you sure you want to unsubscribe from airdrop <b>{token_name}</b>?\n\n"
+            "All wallet addresses associated with this airdrop will be deleted."
+        ),
+        "airdrop_subscription_settings": "Airdrop Subscription Settings 🎁",
+        "choose_airdrop_to_manage": "Choose the airdrop you want to manage subscriptions for",
+        "wallet_addresses_list": "Wallet Addresses:\n{wallet_addresses}",
+        "add_wallet_address": "Add Wallet Address ➕",
+        "remove_wallet_address": "Remove Wallet Address ✖️",
+        "wallet_address_added_success": "Wallet address added successfully ✅",
+        "wallet_address_removed_success": "Wallet address removed successfully ✅",
+        "select_wallet_address_to_remove": "Select the wallet address you want to remove",
         "airdrop_settings_title": "Airdrop Settings 🎁",
         "add_airdrop_instruction": "Send the contract address for the airdrop",
         "send_token_name": "Send the token name",
@@ -274,6 +299,7 @@ TEXTS = {
         "show_airdrop_instruction": "Choose the airdrop you want to show",
         "subscribe_to_airdrop": "Subscribe to Airdrop <b>{token_name}</b>",
         "current_wallet_address": "Current wallet address: <code>{wallet_address}</code>",
+        "choose_option": "Choose one of the following options",
     },
 }
 
@@ -315,8 +341,10 @@ BUTTONS = {
         "group": "مجموعة 👥",
         "user": "مستخدم 🆔",
         "edit_user_wallet_address": "تعديل عنوان المحفظة 🖋",
-        "unsubscribe_from_airdrop": "إلغاء الاشتراك في الآيردروب ✖️",
+        "unsubscribe_from_airdrop": "إلغاء الاشتراك في الآيردروب ⛔️",
         "show_airdrop_subscriptions": "عرض الاشتراكات في الآيردروبات 👓",
+        "add_wallet_address": "إضافة عنوان محفظة ➕",
+        "remove_wallet_address": "حذف عنوان محفظة ✖️",
         "airdrop_settings": "إعدادات الآيردروبات 🎁",
         "add_airdrop": "إضافة آيردروب ➕",
         "edit_airdrop": "تعديل آيردروب 🖋",
@@ -367,8 +395,10 @@ BUTTONS = {
         "group": "Group 👥",
         "user": "User 🆔",
         "edit_user_wallet_address": "Edit Wallet Address 🖋",
-        "unsubscribe_from_airdrop": "Unsubscribe from Airdrop ✖️",
+        "unsubscribe_from_airdrop": "Unsubscribe from Airdrop ⛔️",
         "show_airdrop_subscriptions": "Show Airdrop Subscriptions 👓",
+        "add_wallet_address": "Add Wallet Address ➕",
+        "remove_wallet_address": "Remove Wallet Address ✖️",
         "airdrop_settings": "Airdrop Settings 🎁",
         "add_airdrop": "Add Airdrop ➕",
         "edit_airdrop": "Edit Airdrop 🖋",

@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from custom_filters import PrivateChat
 from common.lang_dicts import TEXTS, BUTTONS, get_lang
 from common.keyboards import build_back_button, build_back_to_home_page_button
-from common.back_to_home_page import back_to_admin_home_page_handler
+from common.back_to_home_page import back_to_user_home_page_handler
 import models
 from start import start_command
 
@@ -183,7 +183,7 @@ check_airdrop_handler = ConversationHandler(
     },
     fallbacks=[
         start_command,
-        back_to_admin_home_page_handler,
+        back_to_user_home_page_handler,
         CallbackQueryHandler(
             back_to_get_contract_address, "^back_to_get_contract_address$"
         ),

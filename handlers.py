@@ -35,9 +35,6 @@ def setup_and_run():
     app.add_handler(check_airdrop_handler)
 
     # AIRDROP SUBSCRIPTION SETTINGS
-    app.add_handler(edit_user_wallet_address_handler)
-    app.add_handler(show_airdrop_subscriptions_handler)
-    app.add_handler(unsubscribe_from_airdrop_handler)
     app.add_handler(airdrop_subscription_settings_handler)
 
     # USER SETTINGS

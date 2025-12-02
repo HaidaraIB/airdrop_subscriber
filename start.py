@@ -24,6 +24,29 @@ async def inits(app: Application):
                 )
             )
 
+    await bot.set_my_description(
+        description=(
+            "What can SamBot do?\n\n"
+            "• Search through available airdrops\n"
+            "• Register on your behalf without wallet connection\n"
+            "• Save and track the status of each airdrop you join\n"
+            "• Notify you about new airdrop opportunities\n"
+            "• Automatically send distributions to your wallet when released\n\n"
+            "Useful links:\n"
+            "• Official bot channel: sambot official  (https://t.me/sambot_Official)\n"
+            "• Sambot community: sambot community (https://t.me/sambot_Community)\n\n"
+            "ماذا يمكن أن يفعل SamBot؟\n"
+            "• البحث في قائمة الايردروبات المتاحة\n"
+            "• التسجيل دون الحاجة لربط المحفظة\n"
+            "• حفظ حالة كل ايردروب تشارك فيه\n"
+            "• تنبيهك بالايردروبات الجديدة\n"
+            "• إرسال التوزيعات إلى محفظتك بشكل تلقائي عند صدورها\n"
+            "روابط مفيدة:\n"
+            "• القناة الرسمية للبوت \n"
+            "• كوميونيتي Sambot\n"
+        ),
+    )
+
 
 async def set_commands(update: Update, context: ContextTypes.DEFAULT_TYPE):
     st_cmd = ("start", "start command")

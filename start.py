@@ -26,7 +26,6 @@ async def inits(app: Application):
 
     await bot.set_my_description(
         description=(
-            "What can SamBot do?\n\n"
             "• Search through available airdrops\n"
             "• Register on your behalf without wallet connection\n"
             "• Save and track the status of each airdrop you join\n"

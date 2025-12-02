@@ -31,7 +31,7 @@ async def inits(app: Application):
             "• Save and track the status of each airdrop you join\n"
             "• Notify you about new airdrop opportunities\n"
             "• Automatically send distributions to your wallet when released\n\n"
-            "ماذا يمكن أن يفعل SamBot؟\n"
+            "ماذا يمكن أن يفعل SamBot؟\n\n"
             "• البحث في قائمة الايردروبات المتاحة\n"
             "• التسجيل دون الحاجة لربط المحفظة\n"
             "• حفظ حالة كل ايردروب تشارك فيه\n"

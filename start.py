@@ -32,18 +32,12 @@ async def inits(app: Application):
             "• Save and track the status of each airdrop you join\n"
             "• Notify you about new airdrop opportunities\n"
             "• Automatically send distributions to your wallet when released\n\n"
-            "Useful links:\n"
-            "• Official bot channel: sambot official  (https://t.me/sambot_Official)\n"
-            "• Sambot community: sambot community (https://t.me/sambot_Community)\n\n"
             "ماذا يمكن أن يفعل SamBot؟\n"
             "• البحث في قائمة الايردروبات المتاحة\n"
             "• التسجيل دون الحاجة لربط المحفظة\n"
             "• حفظ حالة كل ايردروب تشارك فيه\n"
             "• تنبيهك بالايردروبات الجديدة\n"
-            "• إرسال التوزيعات إلى محفظتك بشكل تلقائي عند صدورها\n"
-            "روابط مفيدة:\n"
-            "• القناة الرسمية للبوت \n"
-            "• كوميونيتي Sambot\n"
+            "• إرسال التوزيعات إلى محفظتك بشكل تلقائي عند صدورها"
         ),
     )
 

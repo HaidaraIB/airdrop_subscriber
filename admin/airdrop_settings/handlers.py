@@ -44,7 +44,15 @@ airdrop_settings_handler = CallbackQueryHandler(
 
 
 # Add Airdrop Conversation States
-CONTRACT_ADDRESS, TOKEN_NAME, TOKEN_CODE, AMOUNT, DISTRIBUTION_DATE, PHOTO = range(6)
+(
+    CONTRACT_ADDRESS,
+    TOKEN_NAME,
+    TOKEN_CODE,
+    AMOUNT,
+    DISTRIBUTION_DATE,
+    PHOTO,
+    COMMUNITY_URL,
+) = range(7)
 
 
 async def add_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -97,12 +105,12 @@ async def get_token_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
             token_name = update.message.text.strip()
             context.user_data["airdrop_token_name"] = token_name
             await update.message.reply_text(
-                text=TEXTS[lang]["send_amount"],
+                text=TEXTS[lang]["send_token_code"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
         else:
             await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["send_amount"],
+                text=TEXTS[lang]["send_token_code"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
         return TOKEN_CODE
@@ -120,14 +128,14 @@ async def get_token_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         if update.message:
             token_code = update.message.text.strip()
-            context.user_data["token_code"] = token_code
+            context.user_data["airdrop_token_code"] = token_code
             await update.message.reply_text(
-                text=TEXTS[lang]["send_token_code"],
+                text=TEXTS[lang]["send_amount"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
         else:
             await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["send_token_code"],
+                text=TEXTS[lang]["send_amount"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
         return AMOUNT
@@ -178,18 +186,40 @@ async def get_distribution_date(update: Update, context: ContextTypes.DEFAULT_TY
                 return
             context.user_data["airdrop_distribution_date"] = distribution_date
             await update.message.reply_text(
-                text=TEXTS[lang]["send_photo"],
+                text=TEXTS[lang]["send_community_url"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
         else:
             await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["send_photo"],
+                text=TEXTS[lang]["send_community_url"],
                 reply_markup=InlineKeyboardMarkup(back_buttons),
             )
-        return PHOTO
+        return COMMUNITY_URL
 
 
 back_to_get_distribution_date = get_amount
+
+
+async def get_community_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if PrivateChatAndAdmin().filter(update):
+        lang = get_lang(update.effective_user.id)
+        back_buttons = [
+            build_back_button("back_to_get_community_url", lang=lang),
+            build_back_to_home_page_button(lang=lang, is_admin=True)[0],
+        ]
+
+        community_url = update.message.text.strip()
+
+        context.user_data["airdrop_community_url"] = community_url
+
+        await update.message.reply_text(
+            text=TEXTS[lang]["send_photo"],
+            reply_markup=InlineKeyboardMarkup(back_buttons),
+        )
+        return PHOTO
+
+
+back_to_get_community_url = get_distribution_date
 
 
 async def get_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -208,9 +238,11 @@ async def get_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             new_airdrop = models.Airdrop(
                 contract_address=context.user_data["airdrop_contract_address"],
                 token_name=context.user_data["airdrop_token_name"],
+                token_code=context.user_data["airdrop_token_code"],
                 amount=context.user_data["airdrop_amount"],
                 distribution_date=context.user_data["airdrop_distribution_date"],
                 photo=airdrop_photo,
+                community_url=context.user_data.get("airdrop_community_url"),
             )
             s.add(new_airdrop)
             s.commit()
@@ -263,6 +295,14 @@ add_airdrop_handler = ConversationHandler(
                 callback=get_distribution_date,
             ),
         ],
+        COMMUNITY_URL: [
+            MessageHandler(
+                filters=filters.Regex(
+                    r"^(https?:\/\/)?(t(me)?\.me\/|telegram\.me\/)(c\/)?([a-zA-Z0-9_]{5,})\/?$"
+                ),
+                callback=get_community_url,
+            ),
+        ],
         PHOTO: [
             MessageHandler(
                 filters=filters.PHOTO,
@@ -283,6 +323,7 @@ add_airdrop_handler = ConversationHandler(
         CallbackQueryHandler(
             back_to_get_distribution_date, "^back_to_get_distribution_date$"
         ),
+        CallbackQueryHandler(back_to_get_community_url, "^back_to_get_community_url$"),
     ],
 )
 
@@ -533,6 +574,8 @@ async def choose_field_to_edit(update: Update, context: ContextTypes.DEFAULT_TYP
             text = TEXTS[lang]["send_distribution_date"]
         elif field == "edit_airdrop_photo":
             text = TEXTS[lang]["send_photo"]
+        elif field == "edit_airdrop_community_url":
+            text = TEXTS[lang]["send_community_url"]
         else:
             return CHOOSE_FIELD_TO_EDIT
 
@@ -587,6 +630,11 @@ async def get_new_value(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         caption=update.message.caption,
                     )
                     airdrop.photo = photo_message.photo[-1].file_id
+            elif field == "edit_airdrop_community_url":
+                if update.message.text and update.message.text.strip() != "/skip":
+                    airdrop.community_url = update.message.text.strip()
+                else:
+                    airdrop.community_url = None
             s.commit()
 
         await update.message.reply_text(
@@ -613,7 +661,7 @@ edit_airdrop_handler = ConversationHandler(
         CHOOSE_FIELD_TO_EDIT: [
             CallbackQueryHandler(
                 choose_field_to_edit,
-                "^edit_airdrop_(contract_address|token_name|token_code|amount|distribution_date|photo)$",
+                "^edit_airdrop_(contract_address|token_name|token_code|amount|distribution_date|photo|community_url)$",
             ),
         ],
         NEW_VALUE: [

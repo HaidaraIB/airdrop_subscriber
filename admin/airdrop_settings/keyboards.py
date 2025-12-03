@@ -67,5 +67,11 @@ def build_edit_airdrop_fields_keyboard(lang: models.Language = models.Language.A
                 callback_data="edit_airdrop_photo",
             ),
         ],
+        [
+            InlineKeyboardButton(
+                text=BUTTONS[lang]["edit_airdrop_community_url"],
+                callback_data="edit_airdrop_community_url",
+            ),
+        ],
     ]
     return keyboard

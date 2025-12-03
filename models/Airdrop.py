@@ -15,6 +15,7 @@ class Airdrop(Base):
     token_code = sa.Column(sa.String)
     amount = sa.Column(sa.BigInteger)
     distribution_date = sa.Column(sa.DateTime)
+    community_url = sa.Column(sa.String, nullable=True)
 
     photo = sa.Column(sa.String)
 

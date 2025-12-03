@@ -30,7 +30,8 @@ import models
     NEW_WALLET_ADDRESS,
     WALLET_ADDRESS_TO_REMOVE,
     UNSUBSCRIBE_CONFIRMATION,
-) = range(5)
+    REMOVE_LAST_WALLET_CONFIRMATION,
+) = range(6)
 
 
 async def airdrop_subscription_settings(
@@ -58,6 +59,12 @@ async def airdrop_subscription_settings(
                 airdrop = s.get(models.Airdrop, i)
                 airdrops.append(airdrop)
 
+            subscriptions_summary = ""
+            for airdrop in airdrops:
+                subscriptions_summary += airdrop.stringify_for_user(
+                    lang=lang, wallets_used=len(airdrop.subscriptions)
+                )
+
             # Build keyboard with unique airdrops
             keyboard = build_keyboard(
                 columns=1,
@@ -69,7 +76,7 @@ async def airdrop_subscription_settings(
                 build_back_to_home_page_button(lang=lang, is_admin=False)[0]
             )
             await update.callback_query.edit_message_text(
-                text=TEXTS[lang]["choose_airdrop_to_manage"],
+                text=subscriptions_summary + TEXTS[lang]["choose_airdrop_to_manage"],
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
         return AIRDROP
@@ -97,22 +104,18 @@ async def choose_airdrop(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 .all()
             )
 
-            # Build wallet addresses list
-            wallet_addresses = "Wallet Addresses:\n" + "\n".join(
-                [f"• <code>{sub.wallet_address}</code>" for sub in subscriptions]
-            )
             await context.bot.send_photo(
                 chat_id=update.effective_chat.id,
                 photo=airdrop.photo,
                 caption=(
-                    str(airdrop)
+                    airdrop.stringify(lang)
                     + "\n\n"
                     + TEXTS[lang]["airdrop_time_remaining"].format(
                         time_remaining=airdrop.calculate_time_remaining(lang)
                     )
                     + "\n\n"
                     + TEXTS[lang]["wallet_addresses_list"].format(
-                        wallet_addresses=wallet_addresses
+                        wallets_used=len(subscriptions)
                     )
                 ),
             )
@@ -235,19 +238,27 @@ async def choose_wallet_address_to_remove(
             )
 
             if len(remaining_subscriptions) == 1:
-                # Last wallet address, unsubscribe completely
-                for sub in remaining_subscriptions:
-                    s.delete(sub)
-                s.commit()
-                await update.callback_query.answer(
-                    text=TEXTS[lang]["unsubscribed_from_airdrop"],
-                    show_alert=True,
-                )
+                # Last wallet address, show confirmation
+                airdrop = s.get(models.Airdrop, subscription.airdrop_id)
+                context.user_data["subscription_id_to_remove"] = subscription_id
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            text=BUTTONS[lang]["confirm_button"],
+                            callback_data="confirm_remove_last_wallet",
+                        )
+                    ],
+                    build_back_button(data="back_to_remove_wallet_address", lang=lang),
+                    build_back_to_home_page_button(lang=lang, is_admin=False)[0],
+                ]
                 await update.callback_query.edit_message_text(
-                    text=TEXTS[lang]["home_page"],
-                    reply_markup=build_user_keyboard(lang=lang),
+                    text=TEXTS[lang]["remove_last_wallet_confirmation"].format(
+                        wallet_address=subscription.wallet_address,
+                        token_name=airdrop.token_name,
+                    ),
+                    reply_markup=InlineKeyboardMarkup(keyboard),
                 )
-                return ConversationHandler.END
+                return REMOVE_LAST_WALLET_CONFIRMATION
             else:
                 # Remove this subscription
                 s.delete(subscription)
@@ -269,17 +280,11 @@ async def choose_wallet_address_to_remove(
                 )
 
                 # Build wallet addresses list
-                wallet_addresses = "Wallet Addresses:\n" + "\n".join(
-                    [
-                        f"• <code>{sub.wallet_address}</code>"
-                        for sub in remaining_subscriptions
-                    ]
-                )
                 await context.bot.send_photo(
                     chat_id=update.effective_chat.id,
                     photo=subscription.airdrop.photo,
                     caption=(
-                        str(subscription.airdrop)
+                        subscription.airdrop.stringify(lang)
                         + "\n\n"
                         + TEXTS[lang]["airdrop_time_remaining"].format(
                             time_remaining=subscription.airdrop.calculate_time_remaining(
@@ -288,7 +293,7 @@ async def choose_wallet_address_to_remove(
                         )
                         + "\n\n"
                         + TEXTS[lang]["wallet_addresses_list"].format(
-                            wallet_addresses=wallet_addresses
+                            wallets_used=len(remaining_subscriptions)
                         )
                     ),
                 )
@@ -367,6 +372,41 @@ async def confirm_unsubscribe_airdrop(
         return ConversationHandler.END
 
 
+async def confirm_remove_last_wallet(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    """Actually remove the last wallet address after confirmation"""
+    if PrivateChat().filter(update):
+        lang = get_lang(update.effective_user.id)
+        subscription_id = context.user_data["subscription_id_to_remove"]
+
+        with models.session_scope() as s:
+            subscription = s.get(models.AirdropSubscription, subscription_id)
+            airdrop_id = subscription.airdrop_id
+
+            # Get all subscriptions for this airdrop and user
+            subscriptions = (
+                s.query(models.AirdropSubscription)
+                .filter_by(user_id=update.effective_user.id, airdrop_id=airdrop_id)
+                .all()
+            )
+
+            # Delete all subscriptions (unsubscribe completely)
+            for sub in subscriptions:
+                s.delete(sub)
+            s.commit()
+
+        await update.callback_query.answer(
+            text=TEXTS[lang]["unsubscribed_from_airdrop"],
+            show_alert=True,
+        )
+        await update.callback_query.edit_message_text(
+            text=TEXTS[lang]["home_page"],
+            reply_markup=build_user_keyboard(lang=lang),
+        )
+        return ConversationHandler.END
+
+
 # Handler registrations
 airdrop_subscription_settings_handler = ConversationHandler(
     entry_points=[
@@ -412,6 +452,12 @@ airdrop_subscription_settings_handler = ConversationHandler(
             CallbackQueryHandler(
                 confirm_unsubscribe_airdrop,
                 r"^confirm_unsubscribe$",
+            ),
+        ],
+        REMOVE_LAST_WALLET_CONFIRMATION: [
+            CallbackQueryHandler(
+                confirm_remove_last_wallet,
+                r"^confirm_remove_last_wallet$",
             ),
         ],
     },

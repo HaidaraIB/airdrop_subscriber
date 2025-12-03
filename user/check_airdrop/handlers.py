@@ -69,7 +69,7 @@ async def get_search_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 photo=airdrop.photo,
                 caption=(
                     TEXTS[lang]["airdrop_found"]
-                    + str(airdrop)
+                    + airdrop.stringify(lang)
                     + "\n\n"
                     + TEXTS[lang]["airdrop_time_remaining"].format(
                         time_remaining=airdrop.calculate_time_remaining(lang)

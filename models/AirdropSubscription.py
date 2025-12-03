@@ -18,6 +18,8 @@ class AirdropSubscription(Base):
     airdrop = relationship("Airdrop", back_populates="subscriptions")
     user = relationship("User", back_populates="subscriptions")
 
+
+
     def __str__(self):
         return (
             f"Airdrop: <code>{self.airdrop.token_name}</code>\n"

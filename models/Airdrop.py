@@ -40,14 +40,51 @@ class Airdrop(Base):
             f"<b>{(days)} days, {hours} hours, {minutes} minutes, {seconds} seconds</b>"
         )
 
+    def stringify_for_user(self, lang: Language, wallets_used: int):
+        if lang == Language.ARABIC:
+            return (
+                f"⚫️ <code>{self.token_name}</code>\n"
+                f"الحالة: <b>{'تم التوزيع' if self.distribution_date < datetime.now() else f'\n{self.calculate_time_remaining(lang=lang)}'}</b>\n"
+                f"عدد المحافظ المستخدمة: <b>{wallets_used}</b>\n\n"
+            )
+        else:
+            return (
+                f"⚫️ <code>{self.token_name}</code>\n"
+                f"Status: <b>{'Distributed' if self.distribution_date < datetime.now() else f'\n{self.calculate_time_remaining(lang=lang)}'}</b>\n"
+                f"Wallets Used: <b>{wallets_used}</b>\n\n"
+            )
+
+    def stringify(self, lang: Language):
+        if lang == Language.ENGLISH:
+            return (
+                f"Token Name: <code>{self.token_name}</code>\n"
+                f"Token Code: <code>{self.token_code}</code>\n"
+                f"Distribution Amount: <b>{format_float(self.amount)}</b>\n"
+                f"Total Subscriptions: <b>{self.total_subscriptions}</b>\n"
+                f"Contract Address: <code>{self.contract_address}</code>\n\n"
+                f"Distribution Date:\n<b>{format_datetime(self.distribution_date)}</b>\n\n"
+                f"Official Channel: <a href='{self.community_url}'>{self.token_code}</a>"
+            )
+        else:
+            return (
+                f"اسم العملة: <code>{self.token_name}</code>\n"
+                f"رمز العملة: <code>{self.token_code}</code>\n"
+                f"مبلغ التوزيع: <b>{format_float(self.amount)}</b>\n"
+                f"عدد الاشتراكات: <b>{self.total_subscriptions}</b>\n"
+                f"عنوان العقد: <code>{self.contract_address}</code>\n\n"
+                f"تاريخ التوزيع:\n<b>{format_datetime(self.distribution_date)}</b>\n\n"
+                f"رابط المجتمع: <a href='{self.community_url}'>{self.token_code}</a>"
+            )
+
     def __str__(self):
         return (
             f"Token Name: <code>{self.token_name}</code>\n"
             f"Token Code: <code>{self.token_code}</code>\n"
             f"Distribution Amount: <b>{format_float(self.amount)}</b>\n"
             f"Total Subscriptions: <b>{self.total_subscriptions}</b>\n"
-            f"Contract Address: <code>{self.contract_address}</code>\n"
-            f"Distribution Date: <b>{format_datetime(self.distribution_date)}</b>"
+            f"Contract Address: <code>{self.contract_address}</code>\n\n"
+            f"Distribution Date:\n<b>{format_datetime(self.distribution_date)}</b>\n\n"
+            f"Official Channel: <a href='{self.community_url}'>{self.token_code}</a>\n\n"
         )
 
     def __repr__(self):

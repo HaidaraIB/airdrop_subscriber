@@ -30,6 +30,18 @@ def build_user_keyboard(lang: models.Language):
                 callback_data="user_settings",
             ),
         ],
+        [
+            InlineKeyboardButton(
+                text=BUTTONS[lang]["sam_official_channel"],
+                url="https://t.me/sambot_Official",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=BUTTONS[lang]["sam_community"],
+                url="https://t.me/sambot_Community",
+            ),
+        ],
     ]
     return InlineKeyboardMarkup(keyboard)
 

@@ -298,7 +298,7 @@ add_airdrop_handler = ConversationHandler(
         COMMUNITY_URL: [
             MessageHandler(
                 filters=filters.Regex(
-                    r"^(https?:\/\/)?(t(me)?\.me\/|telegram\.me\/)(c\/)?([a-zA-Z0-9_]{5,})\/?$"
+                    r"^(https?:\/\/)?(t(me)?\.me\/|telegram\.me\/)(c\/)?([\+a-zA-Z0-9_]{5,})\/?$"
                 ),
                 callback=get_community_url,
             ),
@@ -448,7 +448,7 @@ async def choose_airdrop_to_show(update: Update, context: ContextTypes.DEFAULT_T
                 chat_id=update.effective_chat.id,
                 photo=airdrop.photo,
                 caption=(
-                    str(airdrop)
+                    airdrop.stringify(lang)
                     + "\n\n"
                     + TEXTS[lang]["airdrop_time_remaining"].format(
                         time_remaining=airdrop.calculate_time_remaining(lang)
@@ -536,7 +536,7 @@ async def choose_airdrop_to_edit(update: Update, context: ContextTypes.DEFAULT_T
                 chat_id=update.effective_chat.id,
                 photo=airdrop.photo,
                 caption=(
-                    str(airdrop)
+                    airdrop.stringify(lang)
                     + "\n\n"
                     + TEXTS[lang]["airdrop_time_remaining"].format(
                         time_remaining=airdrop.calculate_time_remaining(lang)

@@ -59,8 +59,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await set_commands(update, context)
         lang = get_lang(update.effective_user.id)
         await update.message.reply_text(
-            text=TEXTS[lang]["welcome_msg"],
+            text=TEXTS[lang]["user_welcome_msg"],
             reply_markup=build_user_keyboard(lang=lang),
+            disable_web_page_preview=True,
         )
         return ConversationHandler.END
 
@@ -73,7 +74,7 @@ async def admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await set_commands(update, context)
         lang = get_lang(update.effective_user.id)
         await update.message.reply_text(
-            text=TEXTS[lang]["welcome_msg"],
+            text=TEXTS[lang]["admin_welcome_msg"],
             reply_markup=check_hidden_keyboard(context),
         )
 

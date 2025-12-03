@@ -2,7 +2,18 @@ import models
 
 TEXTS = {
     models.Language.ARABIC: {
-        "welcome_msg": "أهلاً بك...",
+        "admin_welcome_msg": "أهلاً بك...",
+        "user_welcome_msg": (
+            "أهلاً بك...\n\n"
+            "ماذا يمكن أن يفعل SamBot؟\n\n"
+            "• البحث في قائمة الايردروبات المتاحة\n"
+            "• التسجيل دون الحاجة لربط المحفظة\n"
+            "• حفظ حالة كل ايردروب تشارك فيه\n"
+            "• تنبيهك بالايردروبات الجديدة\n"
+            "• إرسال التوزيعات إلى محفظتك بشكل تلقائي عند صدورها\n"
+            "<a href='https://t.me/sambot_Official'>القناة الرسمية</a>\n"
+            "<a href='https://t.me/sambot_Community'>المجتمع</a>"
+        ),
         "force_join_msg": (
             f"لبدء استخدام البوت يجب عليك الانضمام الى محادثة البوت أولاً\n\n"
             "<b>اشترك أولاً 👇</b>\n"
@@ -104,8 +115,13 @@ TEXTS = {
             "هل أنت متأكد من إلغاء الاشتراك في آيردروب <b>{token_name}</b>؟\n"
             "سيتم حذف جميع عناوين المحافظ المرتبطة بهذا الآيردروب."
         ),
+        "remove_last_wallet_confirmation": (
+            "هل أنت متأكد من حذف عنوان المحفظة <code>{wallet_address}</code>؟\n\n"
+            "هذا هو آخر عنوان محفظة مرتبط بآيردروب <b>{token_name}</b>.\n"
+            "سيتم إلغاء الاشتراك في هذا الآيردروب بالكامل."
+        ),
         "choose_airdrop_to_manage": "اختر الآيردروب الذي تريد إدارة اشتراكاته",
-        "wallet_addresses_list": "عناوين المحافظ:\n{wallet_addresses}",
+        "wallet_addresses_list": "عدد المحافظ المستخدمة: <b>{wallets_used}</b>",
         "add_wallet_address": "إضافة عنوان محفظة ➕",
         "remove_wallet_address": "حذف عنوان محفظة ✖️",
         "wallet_address_added_success": "تمت إضافة عنوان المحفظة بنجاح ✅",
@@ -123,7 +139,7 @@ TEXTS = {
             "<code>2024-12-31 23:59:59</code>"
         ),
         "send_photo": "أرسل صورة الآيردروب",
-        "send_community_url": "أرسل رابط المجتمع (Telegram group/channel) أو اضغط /skip لتخطي",
+        "send_community_url": "أرسل رابط المجتمع",
         "airdrop_added_success": "تمت إضافة الآيردروب بنجاح ✅",
         "airdrop_removed_success": "تمت إزالة الآيردروب بنجاح ✅",
         "remove_airdrop_instruction": "اختر من القائمة أدناه الآيردروب الذي تريد إزالته",
@@ -153,7 +169,17 @@ TEXTS = {
         "choose_option": "اختر أحد الخيارات التالية",
     },
     models.Language.ENGLISH: {
-        "welcome_msg": "Welcome...",
+        "admin_welcome_msg": "Welcome...",
+        "user_welcome_msg": (
+            "What can SamBot do?\n\n"
+            "• Search through available airdrops\n"
+            "• Register on your behalf without wallet connection\n"
+            "• Save and track the status of each airdrop you join\n"
+            "• Notify you about new airdrop opportunities\n"
+            "• Automatically send distributions to your wallet when released\n\n"
+            "<a href='https://t.me/sambot_Official'>Official Channel</a>\n"
+            "<a href='https://t.me/sambot_Community'>Community</a>"
+        ),
         "force_join_msg": (
             f"You have to join the bot's chat in order to be able to use it\n\n"
             "<b>Join First 👇</b>\n"
@@ -255,8 +281,13 @@ TEXTS = {
             "Are you sure you want to unsubscribe from airdrop <b>{token_name}</b>?\n\n"
             "All wallet addresses associated with this airdrop will be deleted."
         ),
+        "remove_last_wallet_confirmation": (
+            "Are you sure you want to remove wallet address <code>{wallet_address}</code>?\n\n"
+            "This is the last wallet address associated with airdrop <b>{token_name}</b>.\n"
+            "You will be completely unsubscribed from this airdrop."
+        ),
         "choose_airdrop_to_manage": "Choose the airdrop you want to manage subscriptions for",
-        "wallet_addresses_list": "Wallet Addresses:\n{wallet_addresses}",
+        "wallet_addresses_list": "Wallets Used: <b>{wallets_used}</b>",
         "add_wallet_address": "Add Wallet Address ➕",
         "remove_wallet_address": "Remove Wallet Address ✖️",
         "wallet_address_added_success": "Wallet address added successfully ✅",
@@ -274,7 +305,7 @@ TEXTS = {
             "<code>2024-12-31 23:59:59</code>"
         ),
         "send_photo": "Send the airdrop photo",
-        "send_community_url": "Send the community URL (Telegram group/channel) or press /skip to skip",
+        "send_community_url": "Send the community URL",
         "airdrop_added_success": "Airdrop added successfully ✅",
         "airdrop_removed_success": "Airdrop removed successfully ✅",
         "remove_airdrop_instruction": "Choose from the list below the airdrop you want to remove",
@@ -361,6 +392,8 @@ BUTTONS = {
         "edit_airdrop_photo": "الصورة",
         "edit_airdrop_community_url": "رابط المجتمع",
         "subscribe_to_airdrop": "الاشتراك في الآيردروب ➕",
+        "sam_official_channel": "قناة البوت الرسمية",
+        "sam_community": "المجتمع",
     },
     models.Language.ENGLISH: {
         "check_airdrop": "Search Airdrop 🔍",
@@ -417,6 +450,8 @@ BUTTONS = {
         "edit_airdrop_photo": "Photo",
         "edit_airdrop_community_url": "Community URL",
         "subscribe_to_airdrop": "Subscribe to Airdrop ➕",
+        "sam_official_channel": "Sam Official Channel",
+        "sam_community": "Sam Community",
     },
 }
 

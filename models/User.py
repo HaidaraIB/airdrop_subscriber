@@ -11,7 +11,7 @@ class User(Base):
     user_id = sa.Column(sa.BigInteger, primary_key=True)
     username = sa.Column(sa.String)
     name = sa.Column(sa.String)
-    lang = sa.Column(sa.Enum(Language), default=Language.ARABIC)
+    lang = sa.Column(sa.Enum(Language), default=Language.ENGLISH)
     is_banned = sa.Column(sa.Boolean, default=0)
     is_admin = sa.Column(sa.Boolean, default=0)
 
